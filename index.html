@@ -1,37 +1,143 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Guide TV TNT Réel</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; margin: 0; }
-        .header { position: sticky; top: 0; background: #222; z-index: 100; padding: 10px; border-bottom: 2px solid #444; }
-        .timeline { display: flex; margin-left: 150px; position: relative; height: 30px; align-items: center; border-bottom: 1px solid #555; }
-        .hour-mark { min-width: 120px; font-size: 12px; color: #aaa; border-left: 1px solid #444; padding-left: 5px; }
-        .grid-container { overflow-x: auto; white-space: nowrap; padding-bottom: 20px; }
-        .channel-row { display: flex; height: 60px; align-items: center; border-bottom: 1px solid #333; width: max-content; }
-        .channel-label { width: 150px; min-width: 150px; position: sticky; left: 0; background: #222; font-weight: bold; z-index: 10; height: 100%; display: flex; align-items: center; padding-left: 15px; border-right: 2px solid #444; }
-        .program { background: #3c5a7a; border: 1px solid #5078a0; margin: 2px; border-radius: 4px; padding: 8px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: background 0.2s; font-size: 13px; display: inline-block; vertical-align: top; height: 40px; }
-        .program:hover { background: #4a6f96; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programme TV TNT</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f0f0f0;
+    }
+
+    h1 {
+        text-align: center;
+        padding: 15px;
+    }
+
+    .timeline {
+        display: flex;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 5;
+        border-bottom: 1px solid #ccc;
+        overflow-x: auto;
+    }
+
+    .hour-mark {
+        min-width: 100px;
+        border-right: 1px solid #ddd;
+        padding: 5px;
+        text-align: center;
+        font-size: 14px;
+        background: #fff;
+    }
+
+    .grid-container {
+        overflow-x: auto;
+        overflow-y: visible;
+        white-space: nowrap;
+        padding-bottom: 50px;
+    }
+
+    .channel-row {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .channel-label {
+        width: 180px;
+        min-width: 180px;
+        padding: 10px;
+        background: #fff;
+        border-right: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        font-weight: bold;
+    }
+
+    .program {
+        border: 1px solid #3333;
+        color: #fff;
+        padding: 10px;
+        margin: 1px;
+        display: inline-block;
+        white-space: normal;
+        height: 45px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    /* Adaptation mobile */
+    @media (max-width: 600px) {
+        .hour-mark {
+            min-width: 70px;
+            font-size: 10px;
+        }
+        .channel-label {
+            width: 120px;
+            min-width: 120px;
+            font-size: 12px;
+            padding-left: 8px;
+        }
+        .program {
+            font-size: 11px;
+            padding: 5px;
+            height: 36px;
+        }
+        .grid-container {
+            overflow-x: scroll;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+
+    /* Bouton "Maintenant" */
+    #now-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 999;
+        padding: 10px 15px;
+        border-radius: 8px;
+        background: #4a6f96;
+        color: white;
+        border: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        cursor: pointer;
+        font-size: 14px;
+    }
+</style>
 </head>
 <body>
-    <div class="header"><h1>Guide TNT France Moi</h1></div>
-    <div class="grid-container">
-        <div class="timeline" id="timeline"></div>
-        <div id="epg-grid">Chargement des programmes réels...</div>
-    </div>
+
+<h1>Programme TV – TNT</h1>
+
+<button id="now-btn" onclick="scrollToNow()">⏱ Maintenant</button>
+
+<div class="timeline" id="timeline"></div>
+
+<div class="grid-container">
+    <div id="epg-grid"></div>
+</div>
 
 <script>
-
+/* ----------------------------
+   CONFIG
+-----------------------------*/
 const XMLTV_URL = "./xmltv_tnt.xml";
 const PIXELS_PER_MINUTE = 2;
+const START_HOUR = 6;
+const END_HOUR = 24;
 
-// Tableau de correspondance : type → emoji + couleur
+/* Styles par catégories */
 const CATEGORY_STYLE = {
     "Film":        { emoji: "🎬", color: "#2d4a7c" },
     "Cinéma":      { emoji: "🎬", color: "#2d4a7c" },
-    "Movie":       { emoji: "🎬", color: "#2d4a7c" },
 
     "Série":       { emoji: "📺", color: "#5b3c78" },
     "TV Series":   { emoji: "📺", color: "#5b3c78" },
@@ -39,11 +145,11 @@ const CATEGORY_STYLE = {
     "Information": { emoji: "📰", color: "#7c2d2d" },
     "Journal":     { emoji: "📰", color: "#7c2d2d" },
 
-    "Talk Show":   { emoji: "💬", color: "#8c4c1b" },
+    "Talk":        { emoji: "💬", color: "#8c4c1b" },
     "Débat":       { emoji: "💬", color: "#8c4c1b" },
 
     "Divertissement": { emoji: "🎭", color: "#8c1b6a" },
-    "Jeu":             { emoji: "🎭", color: "#8c1b6a" },
+    "Jeu":            { emoji: "🎭", color: "#8c1b6a" },
 
     "Jeunesse":    { emoji: "👶", color: "#4c7c2d" },
 
@@ -53,27 +159,33 @@ const CATEGORY_STYLE = {
     "Culture":      { emoji: "📚", color: "#6a4c2d" }
 };
 
-// Fonction d'analyse du type
-function getStyleFromCategory(cat) {
-    if (!cat) return { emoji: "❓", color: "#555" };
-
+/* Trouver couleur + emoji */
+function getStyleFromCategory(category) {
+    if (!category) return { emoji: "❓", color: "#555" };
     for (let key in CATEGORY_STYLE) {
-        if (cat.toLowerCase().includes(key.toLowerCase())) {
+        if (category.toLowerCase().includes(key.toLowerCase()))
             return CATEGORY_STYLE[key];
-        }
     }
     return { emoji: "❓", color: "#555" };
 }
 
+/* ----------------------------
+   INIT
+-----------------------------*/
 async function init() {
-    const timeline = document.getElementById('timeline');
-    for (let i = 0; i < 24; i++)
-        timeline.innerHTML += `<div class="hour-mark">${i}h00</div>`;
+    const timeline = document.getElementById("timeline");
 
-    let data = await getEPG();
+    for (let i = START_HOUR; i < END_HOUR; i++) {
+        timeline.innerHTML += `<div class="hour-mark">${i}h00</div>`;
+    }
+
+    const data = await getEPG();
     if (data) render(data);
 }
 
+/* ----------------------------
+   LOAD XMLTV
+-----------------------------*/
 async function getEPG() {
     try {
         const response = await fetch(XMLTV_URL);
@@ -82,89 +194,107 @@ async function getEPG() {
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, "text/xml");
 
-        const channels = {};
         const programs = xml.querySelectorAll("programme");
+        const channels = {};
 
         programs.forEach(p => {
-            const channelId = p.getAttribute("channel");
-            if (!channels[channelId]) channels[channelId] = [];
+            const channel = p.getAttribute("channel");
+            if (!channels[channel]) channels[channel] = [];
 
             const start = parseDate(p.getAttribute("start"));
             const stop  = parseDate(p.getAttribute("stop"));
+            const startMinutes = start.getHours() * 60 + start.getMinutes();
             const duration = (stop - start) / 60000;
 
-            // Lecture de la catégorie
             const categoryNode = p.querySelector("category");
             const category = categoryNode ? categoryNode.textContent : "";
 
-            channels[channelId].push({
+            // On ignore les programmes avant 6h
+            if (start.getHours() < START_HOUR) return;
+
+            channels[channel].push({
                 title: p.querySelector("title")?.textContent || "Sans titre",
-                desc:  p.querySelector("desc")?.textContent || "Aucune description disponible.",
+                desc: p.querySelector("desc")?.textContent || "",
                 category,
                 duration,
-                start: start.getHours() * 60 + start.getMinutes()
+                start: (start.getHours() - START_HOUR) * 60 + start.getMinutes()
             });
         });
 
         return channels;
 
-    } catch (e) {
-        document.getElementById('epg-grid').innerText = "Erreur : impossible de charger les données TV";
-        console.error(e);
+    } catch (err) {
+        document.getElementById("epg-grid").innerText =
+            "Erreur : impossible de charger les données TV";
+        console.error(err);
         return null;
     }
 }
 
-// --- PARSEUR XMLTV ---
+/* ----------------------------
+   XMLTV date format
+-----------------------------*/
 function parseDate(str) {
-    const datePart = str.substring(0, 8);
-    const timePart = str.substring(8, 14);
-    const tzPart   = str.substring(15);
+    const year  = str.substring(0,4);
+    const month = str.substring(4,6);
+    const day   = str.substring(6,8);
 
-    const y = datePart.substring(0, 4);
-    const m = datePart.substring(4, 6) - 1;
-    const d = datePart.substring(6, 8);
+    const h  = str.substring(8,10);
+    const m  = str.substring(10,12);
+    const s  = str.substring(12,14);
 
-    const h   = timePart.substring(0, 2);
-    const min = timePart.substring(2, 4);
-    const sec = timePart.substring(4, 6);
+    const tz = str.substring(15,18) + ":" + str.substring(18);
 
-    return new Date(`${y}-${m+1}-${d}T${h}:${min}:${sec}${formatTZ(tzPart)}`);
+    return new Date(`${year}-${month}-${day}T${h}:${m}:${s}${tz}`);
 }
 
-function formatTZ(tz) {
-    return tz.substring(0, 3) + ":" + tz.substring(3);
-}
-
-// --- AFFICHAGE ---
+/* ----------------------------
+   RENDER
+-----------------------------*/
 function render(data) {
     const grid = document.getElementById("epg-grid");
     grid.innerHTML = "";
 
     Object.keys(data).forEach(channel => {
-        let row = `<div class="channel-row"><div class="channel-label">${channel}</div>`;
-        data[channel].forEach(p => {
+        let row = `<div class="channel-row">
+            <div class="channel-label">${channel}</div>
+        `;
 
+        data[channel].forEach(p => {
             const style = getStyleFromCategory(p.category);
 
             row += `
                 <div class="program"
-                    style="width:${p.duration * PIXELS_PER_MINUTE}px; background:${style.color};"
-                    onclick="alert('${p.desc.replace(/'/g, "\\'")}')"
+                     style="width:${p.duration * PIXELS_PER_MINUTE}px; background:${style.color};"
+                     onclick="alert('${p.title.replace(/'/g,"\\'")}\n\n${p.desc.replace(/'/g,"\\'")}')"
                 >
                     ${style.emoji} ${p.title}
-                </div>`;
+                </div>
+            `;
         });
-        grid.innerHTML += row + "</div>";
+
+        row += "</div>";
+        grid.innerHTML += row;
     });
 }
 
+/* ----------------------------
+   BOUTON "MAINTENANT"
+-----------------------------*/
+function scrollToNow() {
+    const now = new Date();
+    let minutes = (now.getHours() - START_HOUR) * 60 + now.getMinutes();
+    if (minutes < 0) minutes = 0;
+
+    document.querySelector('.grid-container').scrollTo({
+        left: minutes * PIXELS_PER_MINUTE,
+        behavior: "smooth"
+    });
+}
+
+/* GO */
 init();
-
 </script>
+
 </body>
-
 </html>
-
-
-
