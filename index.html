@@ -73,25 +73,26 @@
     }
 
     function parseDate(str) {
-        // format: 20240214T184000 +0100
-        const datePart = str.substring(0, 8);
-        const timePart = str.substring(9, 15);
-        const tzPart = str.substring(16);
+    // format: 20240215065500 +0100
+    const datePart = str.substring(0, 8);
+    const timePart = str.substring(8, 14);
+    const tzPart   = str.substring(15);
 
-        const y = datePart.substring(0, 4);
-        const m = datePart.substring(4, 6) - 1;
-        const d = datePart.substring(6, 8);
+    const y = datePart.substring(0, 4);
+    const m = datePart.substring(4, 6) - 1;
+    const d = datePart.substring(6, 8);
 
-        const h = timePart.substring(0, 2);
-        const min = timePart.substring(2, 4);
-        const sec = timePart.substring(4, 6);
+    const h   = timePart.substring(0, 2);
+    const min = timePart.substring(2, 4);
+    const sec = timePart.substring(4, 6);
 
-        return new Date(`${y}-${m+1}-${d}T${h}:${min}:${sec}${formatTZ(tzPart)}`);
-    }
+    return new Date(`${y}-${m+1}-${d}T${h}:${min}:${sec}${formatTZ(tzPart)}`);
+}
 
-    function formatTZ(tz) {
-        return tz.substring(0, 3) + ":" + tz.substring(3);
-    }
+function formatTZ(tz) {
+    return tz.substring(0, 3) + ":" + tz.substring(3);
+}
+
 
     function render(data) {
         const grid = document.getElementById("epg-grid");
@@ -111,6 +112,7 @@
 </body>
 
 </html>
+
 
 
 
