@@ -62,16 +62,23 @@
     }
 
     .program {
-        border: 1px solid #3333;
-        color: #fff;
-        padding: 10px;
-        margin: 1px;
-        display: inline-block;
-        white-space: normal;
-        height: 45px;
-        overflow: hidden;
-        cursor: pointer;
-    }
+    border: 1px solid #3333;
+    color: #fff;
+    padding: 10px;
+    margin: 1px;
+    white-space: normal;
+    height: 45px;
+    overflow: hidden;
+    cursor: pointer;
+
+    display: inline-block;
+
+    /* 🔧 corrections essentielles */
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: auto;
+}
+
 
     /* Adaptation mobile */
     @media (max-width: 600px) {
@@ -298,3 +305,4 @@ init();
 
 </body>
 </html>
+
