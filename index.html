@@ -23,15 +23,16 @@
     </div>
 
     <script>
-        const XMLTV_URL = "https://raw.githubusercontent.com/wiltteri/epg/main/epg_fr.xml";
-const PROXY = "https://cors.eu.org/"; // Proxy fiable
+        const XMLTV_URL = "https://xmltvfr.fr/TNT.xml";
+
+
 
 async function getEPG(dateKey) {
     const cached = localStorage.getItem('tnt_' + dateKey);
     if (cached) return JSON.parse(cached);
 
     try {
-        const response = await fetch(PROXY + XMLTV_URL);
+        const response = await fetch(XMLTV_URL);
         const text = await response.text();
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, "text/xml");
@@ -107,4 +108,5 @@ async function getEPG(dateKey) {
 </script>
 
 </body>
+
 </html>
