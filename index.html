@@ -23,9 +23,18 @@
     </div>
 
     <script>
-        const XMLTV_URL = "https://xmltvfr.fr/TNT.xml";
+        const XMLTV_URL = "https://xmltv.fr/xmltv/xmltv-tnt.xml";
+const PIXELS_PER_MINUTE = 2;
 
+async function init() {
+    const timeline = document.getElementById('timeline');
+    for (let i = 0; i < 24; i++)
+        timeline.innerHTML += `<div class="hour-mark">${i}h00</div>`;
 
+    const today = new Date().toISOString().split('T')[0];
+    let data = await getEPG(today);
+    if (data) render(data);
+}
 
 async function getEPG(dateKey) {
     const cached = localStorage.getItem('tnt_' + dateKey);
@@ -37,76 +46,63 @@ async function getEPG(dateKey) {
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, "text/xml");
 
+        const channels = {};
+        const programs = xml.querySelectorAll("programme");
 
-            const channels = {};
-            const programs = xml.querySelectorAll("programme");
+        programs.forEach(p => {
+            const channelId = p.getAttribute("channel");
+            if (!channels[channelId]) channels[channelId] = [];
 
-            programs.forEach(p => {
-                const channelId = p.getAttribute("channel");
-                if (!channels[channelId]) channels[channelId] = [];
+            const start = parseDate(p.getAttribute("start"));
+            const stop = parseDate(p.getAttribute("stop"));
+            const duration = (stop - start) / 60000;
 
-                const start = parseDate(p.getAttribute("start"));
-                const stop = parseDate(p.getAttribute("stop"));
-                const duration = (stop - start) / 60000;
-
-                channels[channelId].push({
-                    title: p.querySelector("title")?.textContent || "Sans titre",
-                    desc: p.querySelector("desc")?.textContent || "Aucune description disponible.",
-                    duration: duration,
-                    start: start.getHours() * 60 + start.getMinutes()
-                });
+            channels[channelId].push({
+                title: p.querySelector("title")?.textContent || "Sans titre",
+                desc: p.querySelector("desc")?.textContent || "Aucune description disponible.",
+                duration: duration,
+                start: start.getHours() * 60 + start.getMinutes()
             });
-
-            localStorage.setItem('tnt_' + dateKey, JSON.stringify(channels));
-            return channels;
-        } catch (e) {
-            document.getElementById('epg-grid').innerText = "Erreur : impossible de charger les données TV.";
-            console.error(e);
-            return null;
-        }
-    }
-
-    // Gestion des dates XMLTV (avec fuseau horaire)
-    function parseDate(str) {
-        // Format XMLTV : 20240213T204000+0100
-        const datePart = str.substring(0, 8);
-        const timePart = str.substring(8, 14);
-        const tzPart = str.substring(15) || "+0000";
-
-        const y = datePart.substring(0, 4);
-        const m = datePart.substring(4, 6) - 1;
-        const d = datePart.substring(6, 8);
-
-        const h = timePart.substring(0, 2);
-        const min = timePart.substring(2, 4);
-        const sec = timePart.substring(4, 6);
-
-        // Construction d’un format compatible Date()
-        const iso = `${y}-${parseInt(m) + 1}-${d}T${h}:${min}:${sec}${formatTZ(tzPart)}`;
-        return new Date(iso);
-    }
-
-    function formatTZ(tz) {
-        return tz.substring(0, 3) + ":" + tz.substring(3, 5);
-    }
-
-    function render(data) {
-        const grid = document.getElementById("epg-grid");
-        grid.innerHTML = "";
-
-        Object.keys(data).forEach(channel => {
-            let row = `<div class="channel-row"><div class="channel-label">${channel}</div>`;
-            data[channel].forEach(p => {
-                const width = p.duration * PIXELS_PER_MINUTE;
-                row += `<div class="program" style="width:${width}px" onclick="alert('${p.desc.replace(/'/g, "\\'")}')">${p.title}</div>`;
-            });
-            grid.innerHTML += row + "</div>";
         });
-    }
 
-    init();
+        localStorage.setItem('tnt_' + dateKey, JSON.stringify(channels));
+        return channels;
+    } catch (e) {
+        document.getElementById('epg-grid').innerText = "Erreur : impossible de charger les données TV.";
+        console.error(e);
+        return null;
+    }
+}
+
+function parseDate(str) {
+    const y = str.substring(0,4),
+          m = parseInt(str.substring(4,6)) - 1,
+          d = str.substring(6,8),
+          h = str.substring(8,10),
+          min = str.substring(10,12);
+
+    return new Date(y, m, d, h, min);
+}
+
+function render(data) {
+    const grid = document.getElementById("epg-grid");
+    grid.innerHTML = "";
+
+    Object.keys(data).forEach(channel => {
+        let row = `<div class="channel-row"><div class="channel-label">${channel}</div>`;
+        data[channel].forEach(p => {
+            const width = p.duration * PIXELS_PER_MINUTE;
+            row += `<div class="program" style="width:${width}px" onclick="alert('${p.desc.replace(/'/g, "\\'")}')">${p.title}</div>`;
+        });
+        grid.innerHTML += row + "</div>";
+    });
+}
+
+init();
+
 </script>
 
 </body>
 
 </html>
+
