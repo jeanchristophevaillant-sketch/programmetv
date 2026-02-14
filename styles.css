@@ -1,0 +1,213 @@
+/* GLOBAL */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #fafafa;
+    margin: 0;
+}
+
+/* HEADER */
+header {
+    background: #6200ee;
+    color: white;
+    padding: 10px;
+    /*position: sticky;*/
+    top: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* TABS */
+.tabs {
+    display: flex;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    padding: 10px;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    color: white;
+    border-bottom: 2px solid white;
+}
+
+/* VUES TABS */
+.tab-content {
+    display: none;
+}
+
+.tab-content.visible {
+    display: block;
+}
+#detail .zone-texte {
+    padding: 10px;
+} 
+/* BOUTON RETOUR (detail.html) */
+.back-btn {
+    display: none!important;
+    background: #1d2734;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 6px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+/* ---------------------------
+   JOURNÉE – STRUCTURE
+--------------------------- */
+
+#journee-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Grille de logos */
+#channel-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+}
+
+#channel-list button {
+    width: auto;
+    display: flex;
+    padding: 6px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    align-items: center;
+}
+
+/* Logos dans la grille */
+#channel-list .logo {
+    width: 55px;
+    height: auto;
+    
+    padding: 4px;
+    border-radius: 4px;
+}
+
+/* Conteneur des programmes */
+#journee-programmes {
+    width: 100%;
+    display: block;
+}
+
+/* ---------------------------
+   PROGRAMMES SIMPLES
+--------------------------- */
+
+.program-simple img {
+    width: 75px;
+    height: auto;
+    background: #e0e0e0;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.program-simple .time {
+    font-weight: bold;
+}
+
+/* ---------------------------
+   PROGRAMMES NORMAUX
+--------------------------- */
+
+.program-simple,
+.program-normal {
+    display: grid;
+    grid-template-columns: 60px 1fr 80px;
+    background: white;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    align-items: center;
+    column-gap: 12px; /* espace entre colonnes */
+}
+
+.program-normal .logo {
+    width: 55px;
+    height: auto;
+    background: #e0e0e0;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.program-normal .visuel {
+    width: 80px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.program-normal .time,
+.program-normal .type,
+.program-simple .type {
+    font-size: smaller;
+}
+.program-normal .title {
+    margin-top:5px;
+    margin-bottom: 5px;;
+}
+/* ---------------------------
+   FALLBACK (Logo manquant)
+--------------------------- */
+
+.logo-fallback {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ddd;
+    color: #333;
+    font-size: 12px;
+    text-align: center;
+    border-radius: 4px;
+}
+
+/* UTILITAIRES */
+.hidden {
+    display: none!important;
+}
+/* ANIMATION PUSH VIEW */
+#view-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+#view-container.push-left {
+    transform: translateX(-100%);
+    transition: transform 0.35s ease;
+}
+
+.push-reset {
+    transform: translateX(0);
+    transition: transform 0.35s ease;
+}
+
+/* PAGE DETAIL : slide-in depuis la droite */
+#detail-page {
+    position: fixed;
+    top: 0;
+    left: 100%;
+    width: 100%;
+    height: 100%;
+    background: white;
+    transition: transform 0.35s ease;
+    z-index: 999;
+}
+
+#detail-page.visible {
+    transform: translateX(-100%);
+}
