@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TV Guide</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<header>
+    <h1 id="app-title">Programme TV</h1>
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="journee">Journée</button>
+        <button class="tab-btn" data-tab="maintenant">Direct</button>
+        <button class="tab-btn" data-tab="soir">Soirée</button>
+        <button class="tab-btn" data-tab="late">2ème partie</button>
+    </nav>
+</header>
+<div id="view-container">
+<main>
+    <section id="journee" class="tab-content visible">
+        <div id="journee-container">
+            <div id="channel-list"></div>
+            <div id="journee-programmes" class="hidden"></div>
+        </div>
+    </section>
+
+
+    <section id="maintenant" class="tab-content"><div id="now-list"></div></section>
+    <section id="soir" class="tab-content"><div id="tonight-list"></div></section>
+    <section id="late" class="tab-content"><div id="late-list"></div></section>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
