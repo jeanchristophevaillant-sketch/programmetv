@@ -10,11 +10,27 @@
 <body>
 
 <div id="detail-page">
-    <button class="back-btn" id="back-btn" style="display: none;">⬅ Retour</button>
-    <main id="detail"></main>
+
+    <button class="back-btn" id="back-btn" onclick="history.back()">⬅ Retour</button>
+
+    <div id="detail">
+
+        <h2 id="title"></h2>
+
+        <div id="time" class="detail-time"></div>
+
+        <div id="category" class="detail-category"></div>
+
+        <img id="visuel" class="detail-visuel hidden">
+
+        <p id="desc" class="detail-desc"></p>
+
+        <div id="credits-block" class="detail-credits"></div>
+
+    </div>
+
 </div>
 
 <script src="detail.js"></script>
 </body>
-
 </html>

@@ -1,36 +1,69 @@
+// detail.js modifié selon ta demande
+// ------------------------------------------------------
+// Récupération des paramètres
+// ------------------------------------------------------
 const params = new URLSearchParams(window.location.search);
-const ch = params.get("ch");
+const ch = decodeURIComponent(params.get("ch"));
 const startMs = parseInt(params.get("start"), 10);
 
-const XMLTV_URL = "./xmltv_tnt.xml";
+let programmes = {};
 
-(async () => {
-    const txt = await (await fetch(XMLTV_URL)).text();
-    const xml = new DOMParser().parseFromString(txt, "text/xml");
+// ------------------------------------------------------
+// Charger XMLTV pour reconstruire l'objet complet programme
+// ------------------------------------------------------
+fetch("./xmltv_tnt.xml")
+    .then(r => r.text())
+    .then(txt => {
+        const xml = new DOMParser().parseFromString(txt, "text/xml");
 
-    let found = null;
+        xml.querySelectorAll("programme").forEach(p => {
+            const channel = p.getAttribute("channel");
+            if (!programmes[channel]) programmes[channel] = [];
 
-    xml.querySelectorAll("programme").forEach(p => {
-        if (p.getAttribute("channel") !== ch) return;
+            const start = parseDate(p.getAttribute("start"));
+            const stop = parseDate(p.getAttribute("stop"));
 
-        const start = parseDate(p.getAttribute("start"));
-        if (start.getTime() !== startMs) return;
+            const title = p.querySelector("title")?.textContent ?? "";
+            const desc = p.querySelector("desc")?.textContent ?? "";
+            const category = p.querySelector("category")?.textContent ?? "";
+            const icon = p.querySelector("icon")?.getAttribute("src") ?? "";
 
-        const stop = parseDate(p.getAttribute("stop"));
-        found = {
-            ch,
-            start,
-            stop,
-            title: p.querySelector("title")?.textContent ?? "",
-            desc: p.querySelector("desc")?.textContent ?? "",
-            category: p.querySelector("category")?.textContent ?? "",
-            icon: p.querySelector("icon")?.getAttribute("src") ?? ""
-        };
+            // --- Lecture des crédits ---
+            const creditsNode = p.querySelector("credits");
+
+            const actors = creditsNode
+                ? Array.from(creditsNode.querySelectorAll("actor")).map(a => a.textContent)
+                : [];
+
+            const composers = creditsNode
+                ? Array.from(creditsNode.querySelectorAll("composer")).map(a => a.textContent)
+                : [];
+
+            const guests = creditsNode
+                ? Array.from(creditsNode.querySelectorAll("guest")).map(a => a.textContent)
+                : [];
+
+            programmes[channel].push({
+                ch: channel,
+                start,
+                stop,
+                title,
+                desc,
+                category,
+                icon,
+                actors,
+                composers,
+                guests
+            });
+        });
+
+        const prog = programmes[ch]?.find(p => p.start.getTime() === startMs);
+        if (prog) renderDetail(prog);
     });
 
-    display(found);
-})();
-
+// ------------------------------------------------------
+// Fonctions utilitaires
+// ------------------------------------------------------
 function parseDate(s) {
     const y = s.slice(0, 4), m = s.slice(4, 6), d = s.slice(6, 8);
     const hh = s.slice(8, 10), mm = s.slice(10, 12), ss = s.slice(12, 14);
@@ -38,55 +71,67 @@ function parseDate(s) {
     return new Date(`${y}-${m}-${d}T${hh}:${mm}:${ss}${tz}`);
 }
 
-function display(p) {
-    document.getElementById("detail").innerHTML = `
-        <img src="${p.icon}" style="width:100%;max-height:250px;object-fit:cover;">
-        <div class="zone-texte">
-        <h1>${p.title}</h1>
-        <p><strong>${p.category}</strong> – ${duration(p)}</p>
-        <p>${p.desc}</p>
-        </div>
-    `;
+function formatTime(d) {
+    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-function duration(p) {
-    return Math.round((p.stop - p.start) / 60000) + " min";
+// ------------------------------------------------------
+// Affichage du détail
+// ------------------------------------------------------
+function renderDetail(p) {
+    document.getElementById("title").textContent = p.title;
+    document.getElementById("time").textContent = `${formatTime(p.start)} – ${formatTime(p.stop)}`;
+    document.getElementById("category").textContent = p.category;
+    document.getElementById("desc").textContent = p.desc;
+
+    if (p.icon) {
+        const img = document.getElementById("visuel");
+        img.src = p.icon;
+        img.classList.remove("hidden");
+    }
+
+    renderCredits(p);
 }
 
-let touchstartX = 0;
-document.addEventListener('touchstart', e => touchstartX = e.changedTouches[0].screenX);
-document.addEventListener('touchend', e => {
-    // Swipe vers la droite pour retour
-    if (e.changedTouches[0].screenX - touchstartX > 100) window.history.back();
+// ------------------------------------------------------
+// Affichage des crédits
+// ------------------------------------------------------
+function renderCredits(p) {
+    const div = document.getElementById("credits-block");
+    let html = "";
+
+    if (p.actors?.length) {
+        html += `<div class="credit-section"><strong>Acteurs :</strong><br>` +
+                `<span class="credit-small">${p.actors.join(", ")}</span></div>`;
+    }
+
+    if (p.composers?.length) {
+        html += `<div class="credit-section"><strong>Compositeurs :</strong><br>` +
+                `<span class="credit-small">${p.composers.join(", ")}</span></div>`;
+    }
+
+    if (p.guests?.length) {
+        html += `<div class="credit-section"><strong>Invités :</strong><br>` +
+                `<span class="credit-small">${p.guests.join(", ")}</span></div>`;
+    }
+
+    div.innerHTML = html;
+}
+// --- Swipe pour revenir en arrière depuis la page détail ---
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
 });
-// Animation retour quand on clique sur "Retour"
-document.getElementById("back-btn").addEventListener("click", () => {
-    slideBack();
-});
 
-// Détection swipe gauche → droite
-let startX = 0;
+document.addEventListener("touchend", (e) => {
+    touchEndX = e.changedTouches[0].screenX;
 
-document.addEventListener("touchstart", e => {
-    startX = e.touches[0].clientX;
-});
+    const diffX = touchEndX - touchStartX;
 
-document.addEventListener("touchend", e => {
-    const endX = e.changedTouches[0].clientX;
-    if (endX - startX > 60) slideBack();
-});
-
-function slideBack() {
-    const page = document.getElementById("detail-page");
-    page.style.transform = "translateX(100%)";
-
-    setTimeout(() => {
+    // Swipe vers la droite => retour
+    if (diffX > 70) {
         history.back();
-    }, 300);
-}
-
-// Au chargement, slide depuis la droite
-window.onload = () => {
-    const page = document.getElementById("detail-page");
-    page.classList.add("visible");
-};
+    }
+});

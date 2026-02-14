@@ -4,27 +4,17 @@ let programmes = {};
 let channels = [];
 let allPrograms = [];
 
-// Flag pour bloquer le swipe program-simple juste après retour du détail
-let disableProgramSimpleSwipe = false;
-
 // -----------------------------------------
 // INIT
 // -----------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
     initTabs();
-
     const savedTab = localStorage.getItem("lastActiveTab");
     if (savedTab) {
         activateTab(savedTab);
         localStorage.removeItem("lastActiveTab");
     }
-
-    // ⚠️ Maintenant on restaure l'origine APRES le chargement du XMLTV
-    loadXML().then(() => {
-        restoreOriginView();
-        updateCurrentIndex();   // <-- essentiel !
-});
-
+    loadXML();
 });
 
 // -----------------------------------------
@@ -53,11 +43,9 @@ async function loadXML() {
     const txt = await (await fetch(XMLTV_URL)).text();
     const xml = new DOMParser().parseFromString(txt, "text/xml");
 
-    programmes = {};
-    allPrograms = [];
-
     xml.querySelectorAll("programme").forEach(p => {
         const ch = p.getAttribute("channel");
+
         if (!programmes[ch]) programmes[ch] = [];
 
         const start = parseDate(p.getAttribute("start"));
@@ -67,34 +55,7 @@ async function loadXML() {
         const category = p.querySelector("category")?.textContent ?? "";
         const icon = p.querySelector("icon")?.getAttribute("src") ?? "";
 
-        // Récupération des crédits
-        const creditsNode = p.querySelector("credits");
-
-        const actors = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("actor")).map(a => a.textContent)
-            : [];
-
-        const composers = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("composer")).map(a => a.textContent)
-            : [];
-
-        const guests = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("guest")).map(a => a.textContent)
-            : [];
-
-        const obj = {
-            ch,
-            start,
-            stop,
-            title,
-            desc,
-            category,
-            icon,
-            actors,
-            composers,
-            guests
-        };
-
+        const obj = { ch, start, stop, title, desc, category, icon };
 
         programmes[ch].push(obj);
         allPrograms.push(obj);
@@ -115,9 +76,11 @@ function parseDate(s) {
     const y = s.slice(0, 4),
           m = s.slice(4, 6),
           d = s.slice(6, 8);
+
     const hh = s.slice(8, 10),
           mm = s.slice(10, 12),
           ss = s.slice(12, 14);
+
     const tz = s.slice(15, 18) + ":" + s.slice(18);
 
     return new Date(`${y}-${m}-${d}T${hh}:${mm}:${ss}${tz}`);
@@ -145,7 +108,9 @@ function renderJourneeChannels() {
     });
 }
 
+// BASCULE VERS AFFICHAGE PROGRAMMES
 function showJourneeChannel(channel) {
+    const container = document.getElementById("journee-container");
     const logos = document.getElementById("channel-list");
     const cont = document.getElementById("journee-programmes");
 
@@ -154,24 +119,15 @@ function showJourneeChannel(channel) {
 
     document.getElementById("app-title").textContent = channel;
 
-    const now = new Date();
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+    let back = `<button class="back-btn" onclick="resetJourneeView()">⬅ Retour</button>`;
 
-    const filtered = programmes[channel].filter(p =>
-        p.start <= endOfDay && p.stop >= now
-    );
+    cont.innerHTML = back + programmes[channel].map(p => renderSimple(p)).join("");
+}
 
-    cont.innerHTML =
-        `<button class="back-btn" onclick="resetJourneeView()">⬅ Retour</button>` +
-        filtered.map(p => renderSimple(p)).join("");
-
-
-
-    }
-
+// REVENIR À LA LISTE DES LOGOS
 function resetJourneeView() {
     document.getElementById("app-title").textContent = "Programme TV";
+
     document.getElementById("channel-list").classList.remove("hidden");
 
     const cont = document.getElementById("journee-programmes");
@@ -179,8 +135,9 @@ function resetJourneeView() {
     cont.innerHTML = "";
 }
 
+
 // -----------------------------------------
-// DIRECT / TONIGHT / LATE
+// DIRECT – CE SOIR – 2ÈME PARTIE
 // -----------------------------------------
 function renderNow() {
     const now = new Date();
@@ -223,6 +180,9 @@ function renderLate() {
     });
 }
 
+// -----------------------------------------
+// OVERLAP
+// -----------------------------------------
 function bestOverlap(channel, t1, t2) {
     let best = null, max = 0;
 
@@ -244,30 +204,13 @@ function renderSimple(p) {
     return `
     <div class="program-simple" onclick="goDetail('${encode(p.ch)}','${p.start.getTime()}')">
         <div class="time">${formatTime(p.start)}</div>
+
         <div>
             <div class="title"><strong>${p.title}</strong></div>
             <div class="type">${p.category}</div>
         </div>
+
         <img src="${p.icon}">
-    </div>`;
-}
-
-function renderNormal(p) {
-    const start = formatTime(p.start);
-    const end = formatTime(p.stop);
-
-    return `
-    <div class="program-normal" onclick="goDetail('${encode(p.ch)}','${p.start.getTime()}')">
-        <img class="logo"
-             src="logos/${sanitizeChannelName(p.ch)}.png"
-             alt="${p.ch}"
-             onerror="logoFallback(this, '${p.ch}')">
-        <div class="info">
-            <div class="time">${start} – ${end}</div>
-            <div class="title"><strong>${p.title}</strong></div>
-            <div class="type">${p.category} – ${duration(p)}</div>
-        </div>
-        <img class="visuel" src="${p.icon}">
     </div>`;
 }
 
@@ -277,6 +220,30 @@ function logoFallback(img, channelName) {
     span.textContent = channelName;
     img.replaceWith(span);
 }
+
+
+function renderNormal(p) {
+    const start = formatTime(p.start);
+    const end = formatTime(p.stop);
+
+    return `
+    <div class="program-normal" onclick="goDetail('${encode(p.ch)}','${p.start.getTime()}')">
+
+        <img class="logo"
+             src="logos/${sanitizeChannelName(p.ch)}.png"
+             alt="${p.ch}"
+             onerror="logoFallback(this, '${p.ch}')">
+
+        <div class="info">
+            <div class="time">${start} – ${end}</div>
+            <div class="title"><strong>${p.title}</strong></div>
+            <div class="type">${p.category} – ${duration(p)}</div>
+        </div>
+
+        <img class="visuel" src="${p.icon}">
+    </div>`;
+}
+
 
 // -----------------------------------------
 // HELPERS
@@ -292,26 +259,27 @@ function sanitizeChannelName(name) {
 }
 
 function goDetail(channel, startMs) {
+    // Sauvegarde l’onglet actif
     const activeTab = document.querySelector(".tab-btn.active")?.dataset.tab;
     localStorage.setItem("lastActiveTab", activeTab);
 
-    const inSimple = !document.getElementById("journee-programmes").classList.contains("hidden");
-    const inNormal = activeTab !== "journee";
+    // 🔥 NOUVEAU
+    sessionStorage.setItem("origin", "program-simple");
 
-    if (inSimple) sessionStorage.setItem("origin", "program-simple");
-    else if (inNormal) sessionStorage.setItem("origin", "program-normal");
-    else sessionStorage.removeItem("origin");
-
-    const cont = document.getElementById("view-container");
-    cont.classList.remove("push-reset");
-    cont.classList.add("push-left");
+    const container = document.getElementById("view-container");
+    container.classList.remove("push-reset");
+    container.classList.add("push-left");
 
     setTimeout(() => {
         window.location.href = `detail.html?ch=${channel}&start=${startMs}`;
     }, 300);
 }
 
-function encode(s) { return encodeURIComponent(s); }
+
+
+function encode(s) {
+    return encodeURIComponent(s);
+}
 
 function formatTime(d) {
     return d.toLocaleTimeString("fr-FR", {
@@ -321,46 +289,54 @@ function formatTime(d) {
 }
 
 function duration(p) {
-    return Math.round((p.stop - p.start) / 60000) + " min";
+    const min = Math.round((p.stop - p.start) / 60000);
+    return min + " min";
 }
-
 function activateTab(tabName) {
     document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.tab === tabName);
     });
+
     document.querySelectorAll(".tab-content").forEach(cont => {
         cont.classList.toggle("visible", cont.id === tabName);
     });
 }
+// --- SWIPE ENTRES TABS ---
 
-// -----------------------------------------
-// SWIPE ENTRE TABS
-// -----------------------------------------
 let startX = 0;
 let currentTabIndex = 0;
 
 const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
 const tabContents = Array.from(document.querySelectorAll(".tab-content"));
 
+// Trouver l'onglet actif
 function updateCurrentIndex() {
     currentTabIndex = tabButtons.findIndex(btn => btn.classList.contains("active"));
 }
+
 updateCurrentIndex();
 
-document.addEventListener("touchstart", e => {
+document.addEventListener("touchstart", (e) => {
     startX = e.touches[0].clientX;
 });
 
-document.addEventListener("touchend", e => {
+document.addEventListener("touchend", (e) => {
     const endX = e.changedTouches[0].clientX;
     const diff = startX - endX;
 
+    // Sensibilité du swipe
     if (Math.abs(diff) < 50) return;
 
-    if (diff > 0) goToTab(currentTabIndex + 1);
-    else goToTab(currentTabIndex - 1);
+    if (diff > 0) {
+        // swipe → gauche
+        goToTab(currentTabIndex + 1);
+    } else {
+        // swipe → droite
+        goToTab(currentTabIndex - 1);
+    }
 });
 
+// Fonction de changement d’onglet
 function goToTab(index) {
     if (index < 0 || index >= tabButtons.length) return;
 
@@ -372,73 +348,66 @@ function goToTab(index) {
 
     currentTabIndex = index;
 }
+// Quand on revient d'une autre page (ex: detail), remettre à zéro le swipe
+window.addEventListener("pageshow", () => {
+    resetSwipeTabs();
+    restoreOriginView();
+});
 
-// -----------------------------------------
-// RESTAURER ORIGINE (APRES loadXML)
-// -----------------------------------------
-function restoreOriginView() {
-    const origin = sessionStorage.getItem("origin");
+function resetSwipeTabs() {
+    // On réinitialise la position de départ
+    startX = 0;
 
-    if (origin === "program-simple") {
-        const logos = document.getElementById("channel-list");
-        const programmesDiv = document.getElementById("journee-programmes");
+    // On recalcule l’onglet actif (important après retour)
+    updateCurrentIndex();
+}
 
-        logos.classList.add("hidden");
-        programmesDiv.classList.remove("hidden");
+// --- SWIPE POUR REVENIR À LA LISTE DES CHAINES DANS program-simple ---
 
-        const ch = sessionStorage.getItem("currentChannel");
-        if (ch && programmes[ch]) {
-            document.getElementById("app-title").textContent = ch;
+let psStartX = 0;
 
-            const now = new Date();
-            const endOfDay = new Date();
-            endOfDay.setHours(23, 59, 59, 999);
+const psContainer = document.getElementById("journee-programmes");
+const channelList = document.getElementById("channel-list");
 
-            const filtered = programmes[ch].filter(p =>
-                p.start <= endOfDay && p.stop >= now
-            );
+if (psContainer) {
+    psContainer.addEventListener("touchstart", (e) => {
+        psStartX = e.touches[0].clientX;
+    });
 
-            programmesDiv.innerHTML =
-                `<button class="back-btn" onclick="resetJourneeView()">⬅ Retour</button>` +
-                filtered.map(p => renderSimple(p)).join("");
+    psContainer.addEventListener("touchend", (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const diff = endX - psStartX;
+
+        // Sensibilité swipe
+        // On bloque le swipe si on revient du détail
+        if (diff > 60 && !sessionStorage.getItem("origin")) {
+            showChannelList();
         }
 
-        disableProgramSimpleSwipe = true;
-        setTimeout(() => {
-            disableProgramSimpleSwipe = false;
-            sessionStorage.removeItem("origin");
-        }, 300);
-    }
+    });
+}
 
-    if (origin === "program-normal") {
-        sessionStorage.removeItem("origin");
+function showChannelList() {
+    // Cache programmes, montre chaînes
+    psContainer.classList.add("hidden");
+    channelList.classList.remove("hidden");
+
+    // Optionnel : scroll en haut pour éviter d’avoir le contenu au milieu
+    channelList.scrollTop = 0;
+}
+function restoreOriginView() {
+    const origin = sessionStorage.getItem("origin");
+    const logos = document.getElementById("channel-list");
+    const programmes = document.getElementById("journee-programmes");
+
+    if (origin === "program-simple") {
+        logos.classList.add("hidden");
+        programmes.classList.remove("hidden");
+
+        // On efface LÉGÈREMENT PLUS TARD
+        setTimeout(() => { 
+            sessionStorage.removeItem("origin"); 
+        }, 100);
     }
 }
 
-// -----------------------------------------
-// SWIPE PROGRAM-SIMPLE → LISTE DES CHAÎNES
-// -----------------------------------------
-let psSwipeStartX = 0;
-
-document.addEventListener("touchstart", e => {
-    const jp = document.getElementById("journee-programmes");
-    if (!jp.classList.contains("hidden")) {
-        psSwipeStartX = e.touches[0].clientX;
-    }
-});
-
-document.addEventListener("touchend", e => {
-    const jp = document.getElementById("journee-programmes");
-    const cl = document.getElementById("channel-list");
-
-    if (jp.classList.contains("hidden")) return;
-
-    const endX = e.changedTouches[0].clientX;
-    const diff = endX - psSwipeStartX;
-
-    if (diff > 60 && !disableProgramSimpleSwipe) {
-        jp.classList.add("hidden");
-        cl.classList.remove("hidden");
-        cl.scrollTop = 0;
-    }
-});
