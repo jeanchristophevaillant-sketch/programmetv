@@ -1,23 +1,43 @@
 name: Update XMLTV TNT
+
 on:
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
+
+permissions:
+  contents: write
+
 jobs:
   update-file:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Download XMLTV TNT file
-        run: curl -o xmltv_tnt.xml https://xmltvfr.fr/xmltv/xmltv_tnt.xml
+        run: |
+          curl -L --retry 5 --retry-delay 10 --max-time 120 \
+            -o xmltv_tnt.xml \
+            https://xmltvfr.fr/xmltv/xmltv_tnt.xml
+
+      - name: Vérifier la taille
+        run: |
+          if [ ! -s xmltv_tnt.xml ]; then
+            echo "❌ Téléchargement échoué : fichier vide"
+            exit 1
+          fi
+
       - name: Commit and push if updated
         run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
           if [[ -n "$(git status --porcelain)" ]]; then
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
             git add xmltv_tnt.xml
             git commit -m "Mise à jour automatique du XMLTV TNT"
             git push
           else
             echo "Aucun changement détecté"
+          fi
