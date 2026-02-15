@@ -32,6 +32,30 @@
     <section id="late" class="tab-content"><div id="late-list"></div></section>
 </main>
 </div>
+
+<!-- MODAL DÉTAIL -->
+<div id="detail-modal" class="detail-modal hidden">
+    <div class="detail-content">
+        <button class="back-btn detail-back-btn">⬅ Retour</button>
+        
+        <div id="detail">
+            <div class="detail-header">
+                <div class="detail-info">
+                    <h2 id="detail-title"></h2>
+                    <div id="detail-subtitle" class="detail-subtitle hidden"></div>
+                    <div id="detail-time" class="detail-time"></div>
+                    <div id="detail-category" class="detail-category"></div>
+                </div>
+                <img id="detail-channel-logo" class="detail-channel-logo hidden" style="cursor: pointer;" onclick="goToChannelProgram()">
+            </div>
+            <div id="detail-info-block" class="detail-info-block"></div>
+            <img id="detail-visuel" class="detail-visuel hidden">
+            <p id="detail-desc" class="detail-desc"></p>
+            <div id="detail-credits-block" class="detail-credits"></div>
+        </div>
+    </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>
