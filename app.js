@@ -47,16 +47,11 @@ document.addEventListener("DOMContentLoaded", () => {
 // TABS
 // -----------------------------------------
 function initTabs() {
-    document.querySelectorAll(".tab-btn").forEach(btn => {
+    document.querySelectorAll(".tab-btn").forEach((btn, idx) => {
         btn.addEventListener("click", () => {
-            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            document.querySelectorAll(".tab-content")
-                .forEach(c => c.classList.remove("visible"));
-
-            document.getElementById(btn.dataset.tab).classList.add("visible");
-
+            // Déterminer la direction : si l'index cliqué > index actuel, direction = "left"
+            const direction = idx > currentTabIndex ? "left" : "right";
+            goToTab(idx, direction);
             resetJourneeView();
         });
     });
@@ -195,8 +190,14 @@ function showJourneeChannel(channel) {
     const logos = document.getElementById("channel-list");
     const cont = document.getElementById("journee-programmes");
 
-    logos.classList.add("hidden");
-    cont.classList.remove("hidden");
+    // Animation de sortie pour les chaînes
+    logos.classList.add("slide-exit");
+    
+    // Attendre la fin de l'animation avant de cacher
+    setTimeout(() => {
+        logos.classList.add("hidden");
+        logos.classList.remove("slide-exit");
+    }, 350);
 
     document.getElementById("app-title").textContent = channel;
 
@@ -211,18 +212,40 @@ function showJourneeChannel(channel) {
     cont.innerHTML =
         `<button class="back-btn" onclick="resetJourneeView()">⬅ Retour</button>` +
         filtered.map(p => renderSimple(p)).join("");
-
-
-
-    }
+    
+    // Animation d'entrée pour les programmes
+    cont.classList.remove("hidden");
+    cont.classList.add("slide-enter");
+    
+    // Nettoyer la classe d'animation après
+    setTimeout(() => {
+        cont.classList.remove("slide-enter");
+    }, 350);
+}
 
 function resetJourneeView() {
     document.getElementById("app-title").textContent = "Programme TV";
-    document.getElementById("channel-list").classList.remove("hidden");
-
+    const logos = document.getElementById("channel-list");
     const cont = document.getElementById("journee-programmes");
-    cont.classList.add("hidden");
-    cont.innerHTML = "";
+    
+    // Animation de sortie pour les programmes
+    cont.classList.add("slide-exit");
+    
+    // Attendre la fin de l'animation avant de cacher
+    setTimeout(() => {
+        cont.classList.add("hidden");
+        cont.classList.remove("slide-exit");
+        cont.innerHTML = "";
+    }, 350);
+    
+    // Animation d'entrée pour les chaînes
+    logos.classList.remove("hidden");
+    logos.classList.add("slide-enter");
+    
+    // Nettoyer la classe d'animation après
+    setTimeout(() => {
+        logos.classList.remove("slide-enter");
+    }, 350);
 }
 
 // -----------------------------------------
@@ -492,8 +515,18 @@ function goToChannelProgram() {
 }
 
 function closeDetail() {
-    document.getElementById("detail-modal").classList.add("hidden");
-    isModalVisible = false;
+    const modal = document.getElementById("detail-modal");
+    const content = document.querySelector(".detail-content");
+    
+    // Ajouter l'animation de sortie vers la droite
+    content.style.animation = "slideOutToRight 0.35s ease-in";
+    
+    // Attendre la fin de l'animation avant de cacher
+    setTimeout(() => {
+        modal.classList.add("hidden");
+        content.style.animation = "slideInFromRight 0.3s ease-out";
+        isModalVisible = false;
+    }, 350);
 }
 
 function encode(s) { return encodeURIComponent(s); }
@@ -562,20 +595,49 @@ document.addEventListener("touchend", e => {
 
     if (Math.abs(diff) < 50) return;
 
-    if (diff > 0) goToTab(currentTabIndex + 1);
-    else goToTab(currentTabIndex - 1);
+    // Tracker la direction : diff > 0 = swipe vers la gauche, diff < 0 = swipe vers la droite
+    const direction = diff > 0 ? "left" : "right";
+    
+    if (diff > 0) goToTab(currentTabIndex + 1, direction);
+    else goToTab(currentTabIndex - 1, direction);
 });
 
-function goToTab(index) {
+function goToTab(index, direction = "left") {
     if (index < 0 || index >= tabButtons.length) return;
 
-    tabButtons.forEach(btn => btn.classList.remove("active"));
-    tabContents.forEach(sec => sec.classList.remove("visible"));
+    const currentTab = tabContents[currentTabIndex];
+    const nextTab = tabContents[index];
 
-    tabButtons[index].classList.add("active");
-    tabContents[index].classList.add("visible");
+    // Ajouter animation de sortie à l'onglet actuel
+    if (direction === "left") {
+        currentTab.classList.add("slide-out-left");
+    } else {
+        currentTab.classList.add("slide-out-right");
+    }
 
-    currentTabIndex = index;
+    // Ajouter animation d'entrée au nouvel onglet
+    nextTab.classList.remove("visible");
+    nextTab.classList.add("visible");
+    if (direction === "left") {
+        nextTab.classList.add("slide-in-right");
+    } else {
+        nextTab.classList.add("slide-in-left");
+    }
+
+    // Attendre la fin des animations
+    setTimeout(() => {
+        // Mettre à jour les onglets
+        tabButtons.forEach(btn => btn.classList.remove("active"));
+        tabContents.forEach(sec => {
+            sec.classList.remove("visible");
+            sec.classList.remove("slide-out-left", "slide-out-right", "slide-in-left", "slide-in-right");
+        });
+
+        tabButtons[index].classList.add("active");
+        nextTab.classList.add("visible");
+
+        currentTabIndex = index;
+    }, 350);
 }
 
 // -----------------------------------------
@@ -642,8 +704,24 @@ document.addEventListener("touchend", e => {
     const diff = endX - psSwipeStartX;
 
     if (diff > 60 && !disableProgramSimpleSwipe) {
-        jp.classList.add("hidden");
+        // Animation de sortie vers la droite pour les programmes
+        jp.classList.add("slide-exit-right");
+        
+        // Attendre la fin de l'animation avant de cacher
+        setTimeout(() => {
+            jp.classList.add("hidden");
+            jp.classList.remove("slide-exit-right");
+        }, 350);
+        
+        // Animation d'entrée de la gauche pour les chaînes
         cl.classList.remove("hidden");
+        cl.classList.add("slide-enter-left");
+        
+        // Nettoyer la classe d'animation après
+        setTimeout(() => {
+            cl.classList.remove("slide-enter-left");
+        }, 350);
+        
         cl.scrollTop = 0;
     }
 });

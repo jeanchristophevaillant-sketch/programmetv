@@ -51,6 +51,22 @@ header {
 .tab-content.visible {
     display: block;
 }
+
+.tab-content.slide-out-left {
+    animation: slideOutToLeft 0.35s ease-in;
+}
+
+.tab-content.slide-out-right {
+    animation: slideOutToRight 0.35s ease-in;
+}
+
+.tab-content.slide-in-left {
+    animation: slideInFromLeft 0.35s ease-out;
+}
+
+.tab-content.slide-in-right {
+    animation: slideInFromRight 0.35s ease-out;
+}
 #detail-page .zone-texte {
     padding: 10px;
 } 
@@ -92,6 +108,63 @@ header {
     flex-wrap: wrap;
     gap: 10px;
     padding: 10px;
+}
+
+#channel-list.slide-exit {
+    animation: slideOutToLeft 0.35s ease-in;
+}
+
+#journee-programmes.slide-enter {
+    animation: slideInFromRight 0.35s ease-out;
+}
+
+#journee-programmes.slide-exit {
+    animation: slideOutToLeft 0.35s ease-in;
+}
+
+#channel-list.slide-enter {
+    animation: slideInFromRight 0.35s ease-out;
+}
+
+#journee-programmes.slide-exit-right {
+    animation: slideOutToRight 0.35s ease-in;
+}
+
+#channel-list.slide-enter-left {
+    animation: slideInFromLeft 0.35s ease-out;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutToRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideOutToLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
 }
 
 #channel-list button {
