@@ -397,7 +397,7 @@ function showDetail(prog) {
 
     if (categoriesAllocine.includes(prog.category)) {
         document.getElementById("detail-allocine-block").innerHTML =
-            `<a href="${allocineSearchUrl(prog.title)}" target="_blank">Infos AlloCiné</a>`;
+            `<a href="${allocineSearchUrl(prog.title)}" target="_blank">📝 Infos AlloCiné</a>`;
     }
     else {
         document.getElementById("detail-allocine-block").innerHTML = "";

@@ -79,6 +79,11 @@ header {
     font-weight: bold;
     display: inline;
 }
+#detail-allocine-block a {
+    color:#666;
+    text-decoration: none!important;
+}
+
 /* BOUTON RETOUR (detail-page.html) */
 .back-btn {
     display: none!important;
