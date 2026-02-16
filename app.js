@@ -393,6 +393,7 @@ function showDetail(prog) {
 
     // Afficher les infos supplémentaires (année, pays, épisode, classification)
     renderDetailInfo(prog);
+    document.getElementById("detail-allocine-block").innerHTML = `<a href="${allocineSearchUrl(prog.title)}" target="_blank">Infos AlloCiné</a>`;
 
     // Afficher le logo de la chaîne
     const channelLogo = document.getElementById("detail-channel-logo");
@@ -727,3 +728,7 @@ document.addEventListener("touchend", e => {
         cl.scrollTop = 0;
     }
 });
+function allocineSearchUrl(title) {
+    const encoded = encodeURIComponent(title);
+    return `https://www.allocine.fr/rechercher/?q=${encoded}`;
+}

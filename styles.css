@@ -74,7 +74,7 @@ header {
     width: 100%;
     height: auto;
 }
-#detail-page .detail-time,#detail-page .detail-category {
+#detail-page .detail-time,#detail-page .detail-category,#detail-allocine-block {
     font-size: smaller;
     font-weight: bold;
     display: inline;
