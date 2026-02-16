@@ -19,6 +19,8 @@ let currentDetailProgram = null;
 // -----------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
     initTabs();
+     // 🔥 Activer Direct au démarrage
+    activateTab("maintenant");
 
     const savedTab = localStorage.getItem("lastActiveTab");
     if (savedTab) {
