@@ -393,12 +393,16 @@ function showDetail(prog) {
 
     // Afficher les infos supplémentaires (année, pays, épisode, classification)
     renderDetailInfo(prog);
-    const categoriesAllocine = ["Film", "Série", "Téléfilm", "Documentaire", "Cinema","Series"];
+    const categoriesAllocine = ["Film", "Série", "Téléfilm", "Cinema","Series","Action","Animation","Aventure","Comédie","Drame","Fantastique","Horreur","Policier","Science-Fiction","Thriller"];
 
     if (categoriesAllocine.includes(prog.category)) {
-    document.getElementById("detail-allocine-block").innerHTML =
-        `<a href="${allocineSearchUrl(prog.title)}" target="_blank">Infos AlloCiné</a>`;
+        document.getElementById("detail-allocine-block").innerHTML =
+            `<a href="${allocineSearchUrl(prog.title)}" target="_blank">Infos AlloCiné</a>`;
     }
+    else {
+        document.getElementById("detail-allocine-block").innerHTML = "";
+        }
+    
 
     // Afficher le logo de la chaîne
     const channelLogo = document.getElementById("detail-channel-logo");
