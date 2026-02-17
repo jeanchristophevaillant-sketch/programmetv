@@ -182,6 +182,8 @@ function parseDate(s) {
 // -----------------------------------------
 function renderJourneeChannels() {
     const list = document.getElementById("channel-list");
+    const title = document.getElementById("one-channel-title");
+    title.classList.add("hidden");
     list.innerHTML = "";
 
     channels.forEach(ch => {
@@ -202,6 +204,7 @@ function renderJourneeChannels() {
 function showJourneeChannel(channel) {
     const logos = document.getElementById("channel-list");
     const cont = document.getElementById("journee-programmes");
+    const title = document.getElementById("one-channel-title");
 
     // Animation de sortie pour les chaînes
     logos.classList.add("slide-exit");
@@ -212,7 +215,7 @@ function showJourneeChannel(channel) {
         logos.classList.remove("slide-exit");
     }, 350);
 
-    document.getElementById("app-title").textContent = channel;
+    title.textContent = channel;
 
     const now = new Date();
     const endOfDay = new Date();
@@ -228,26 +231,32 @@ function showJourneeChannel(channel) {
     
     // Animation d'entrée pour les programmes
     cont.classList.remove("hidden");
+    title.classList.remove("hidden");
     cont.classList.add("slide-enter");
+    title.classList.add("slide-enter");
     
     // Nettoyer la classe d'animation après
     setTimeout(() => {
         cont.classList.remove("slide-enter");
+        title
     }, 350);
 }
 
 function resetJourneeView() {
-    document.getElementById("app-title").textContent = "Programme TV";
     const logos = document.getElementById("channel-list");
     const cont = document.getElementById("journee-programmes");
+    const title = document.getElementById("one-channel-title");
     
     // Animation de sortie pour les programmes
     cont.classList.add("slide-exit");
+    title.classList.add("slide-exit");
     
     // Attendre la fin de l'animation avant de cacher
     setTimeout(() => {
         cont.classList.add("hidden");
+        title.classList.add("hidden");
         cont.classList.remove("slide-exit");
+        title.classList.remove("slide-exit");
         cont.innerHTML = "";
     }, 350);
     
@@ -409,13 +418,16 @@ function showDetail(prog) {
     renderDetailInfo(prog);
     const categoriesAllocine = ["Film", "Série", "Téléfilm", "Cinema","Series","Action","Animation","Aventure","Comédie","Drame","Fantastique","Horreur","Policier","Science-Fiction","Thriller"];
 
+    const allocineBlock = document.getElementById("detail-allocine-block");
     if (categoriesAllocine.includes(prog.category)) {
-        document.getElementById("detail-allocine-block").innerHTML =
+        allocineBlock.style.display = "block"; 
+        allocineBlock.innerHTML =
             `<a href="${allocineSearchUrl(prog.title)}" target="_blank">📝 Infos AlloCiné</a>`;
     }
     else {
-        document.getElementById("detail-allocine-block").innerHTML = "";
-        }
+        allocineBlock.style.display = "none";
+        allocineBlock.innerHTML = "";
+    }
     
 
     // Afficher le logo de la chaîne
@@ -681,9 +693,11 @@ function restoreOriginView() {
     if (origin === "program-simple") {
         const logos = document.getElementById("channel-list");
         const programmesDiv = document.getElementById("journee-programmes");
+        const title = document.getElementById("one-channel-title");
 
         logos.classList.add("hidden");
         programmesDiv.classList.remove("hidden");
+        title.classList.remove("hidden");
 
         const ch = sessionStorage.getItem("currentChannel");
         if (ch && programmes[ch]) {
@@ -729,6 +743,7 @@ document.addEventListener("touchstart", e => {
 document.addEventListener("touchend", e => {
     const jp = document.getElementById("journee-programmes");
     const cl = document.getElementById("channel-list");
+    const title = document.getElementById("one-channel-title");
 
     if (jp.classList.contains("hidden") || isModalVisible) return;
 
@@ -742,6 +757,7 @@ document.addEventListener("touchend", e => {
         // Attendre la fin de l'animation avant de cacher
         setTimeout(() => {
             jp.classList.add("hidden");
+            title.classList.add("hidden");
             jp.classList.remove("slide-exit-right");
         }, 350);
         
