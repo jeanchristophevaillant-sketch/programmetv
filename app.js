@@ -44,6 +44,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+// -----------------------------------------
+// GESTION DU BOUTON RETOUR DU SMARTPHONE
+// -----------------------------------------
+window.addEventListener("popstate", () => {
+    if (isModalVisible) {
+        // Annule la visibilité avant d'appeler closeDetail()
+        isModalVisible = false;
+        closeDetail(false); // ⚠️ on indique "ne pas faire history.back()" dedans
+    }
+});
+
 
 // -----------------------------------------
 // TABS
@@ -373,6 +384,9 @@ function goDetail(channel, startMs) {
 }
 
 function showDetail(prog) {
+    // Ajouter un état dans l'historique pour intercepter le bouton Retour
+    history.pushState({ detail: true }, "");
+
     // Sauvegarder le programme courant pour la navigation
     currentDetailProgram = prog;
     
@@ -526,20 +540,26 @@ function goToChannelProgram() {
     }, 300);
 }
 
-function closeDetail() {
+function closeDetail(doBack = true) {
     const modal = document.getElementById("detail-modal");
     const content = document.querySelector(".detail-content");
-    
-    // Ajouter l'animation de sortie vers la droite
+
+    // Animation sortie
     content.style.animation = "slideOutToRight 0.35s ease-in";
-    
-    // Attendre la fin de l'animation avant de cacher
+
     setTimeout(() => {
         modal.classList.add("hidden");
         content.style.animation = "slideInFromRight 0.3s ease-out";
+
         isModalVisible = false;
+
+        // Si la fermeture vient d'un clic bouton → revenir en arrière dans l’historique
+        if (doBack && history.state && history.state.detail) {
+            history.back();
+        }
     }, 350);
 }
+
 
 function encode(s) { return encodeURIComponent(s); }
 

@@ -79,6 +79,13 @@ header {
     font-weight: bold;
     display: inline;
 }
+#detail-allocine-block {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+}
 #detail-allocine-block a {
     color:#666;
     text-decoration: none!important;
