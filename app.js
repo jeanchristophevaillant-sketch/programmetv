@@ -416,7 +416,7 @@ function showDetail(prog) {
 
     // Afficher les infos supplémentaires (année, pays, épisode, classification)
     renderDetailInfo(prog);
-    const categoriesAllocine = ["Film", "Série", "Téléfilm", "Cinema","Series","Action","Animation","Aventure","Comédie","Drame","Fantastique","Horreur","Policier","Science-Fiction","Thriller"];
+    const categoriesAllocine = ["Film", "Série", "Telefilm", "Téléfilm", "Cinema","Series","Action","Animation","Aventure","Comédie","Drame","Fantastique","Horreur","Policier","Science-Fiction","Thriller"];
 
     const allocineBlock = document.getElementById("detail-allocine-block");
     if (categoriesAllocine.includes(prog.category)) {
