@@ -74,32 +74,60 @@ function initTabs() {
 // LOAD XMLTV
 // -----------------------------------------
 async function loadXML() {
+
+    // Télécharge le fichier XMLTV puis lit son contenu sous forme de texte
     const txt = await (await fetch(XMLTV_URL)).text();
+
+    // Convertit la chaîne XML en un document DOM exploitable
     const xml = new DOMParser().parseFromString(txt, "text/xml");
 
-    programmes = {};
-    allPrograms = [];
+    // Structures principales : liste par chaîne + liste générale
+    programmes = {};   // programmes["TF1"] = [...]
+    allPrograms = [];  // liste de TOUTES les entrées
 
-    // Fonction utilitaire (évite 50 lignes)
+    // --------------------------------------------------
+    // Fonctions utilitaires pour éviter des répétitions
+    // --------------------------------------------------
+
+    // getText : renvoie le texte d’un noeud (ou "" si absent)
     const getText = (node, selector) =>
         node.querySelector(selector)?.textContent ?? "";
 
+    // getAttr : renvoie une valeur d'attribut (ex: <icon src="...">)
     const getAttr = (node, selector, attr) =>
         node.querySelector(selector)?.getAttribute(attr) ?? "";
 
+    // getList : renvoie une liste de textes (ex: tous les <actor>)
     const getList = (node, selector) =>
-        node ? Array.from(node.querySelectorAll(selector)).map(n => n.textContent) : [];
+        node
+            ? Array.from(node.querySelectorAll(selector)).map(n => n.textContent)
+            : [];
 
+    // --------------------------------------------------
+    // Extraction de TOUTES les <programme> du XML
+    // --------------------------------------------------
     xml.querySelectorAll("programme").forEach(p => {
+
+        // Nom de la chaîne (attribut "channel" dans <programme>)
         const ch = p.getAttribute("channel");
+
+        // Initialise la liste des programmes de la chaîne si besoin
         if (!programmes[ch]) programmes[ch] = [];
 
+        // Récupère le bloc <credits> une seule fois
         const credits = p.querySelector("credits");
 
+        // --------------------------------------------------
+        // Création d’un objet standardisé représentant le programme
+        // --------------------------------------------------
         const obj = {
-            ch,
+            ch,   // nom chaîne
+
+            // Dates début/fin converties en Date JavaScript
             start: parseDate(p.getAttribute("start")),
-            stop: parseDate(p.getAttribute("stop")),
+            stop:  parseDate(p.getAttribute("stop")),
+
+            // Infos simples extraites via utilitaires
             title:      getText(p, "title"),
             subtitle:   getText(p, "sub-title"),
             desc:       getText(p, "desc"),
@@ -110,7 +138,9 @@ async function loadXML() {
             episodeNum: getText(p, "episode-num"),
             rating:     getText(p, "rating value"),
 
-            // Crédits
+            // --------------------------------------------------
+            // Extraction des crédits (listes)
+            // --------------------------------------------------
             actors:     getList(credits, "actor"),
             directors:  getList(credits, "director"),
             producers:  getList(credits, "producer"),
@@ -120,12 +150,17 @@ async function loadXML() {
             guests:     getList(credits, "guest"),
         };
 
+        // Ajoute le programme dans la liste de sa chaîne
         programmes[ch].push(obj);
+
+        // Ajoute aussi le programme dans la liste globale
         allPrograms.push(obj);
     });
 
+    // Liste des chaînes utilisées
     channels = Object.keys(programmes);
 
+    // Met à jour les affichages
     renderJourneeChannels();
     renderNow();
     renderTonight();
@@ -762,4 +797,5 @@ function normalize(str) {
         .replace(/[\u0300-\u036f]/g, "") // supprime les accents
         .toLowerCase();                  // met en minuscule
 }
+
 
