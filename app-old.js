@@ -185,79 +185,17 @@ function parseDate(s) {
 // -----------------------------------------
 // JOURNÉE – LOGOS + PROGRAMMES
 // -----------------------------------------
-// ==================================================
-// CONFIG
-// ==================================================
-
-const ANIM_TIME = 350;
-
-
-// ==================================================
-// DOM HELPERS
-// ==================================================
-
-function $(id) {
-    return document.getElementById(id);
-}
-
-function clear(el) {
-    el.innerHTML = "";
-}
-
-
-// ==================================================
-// ANIMATIONS
-// ==================================================
-
-function animateExit(el, callback) {
-
-    el.classList.add("slide-exit");
-
-    setTimeout(() => {
-
-        el.classList.remove("slide-exit");
-
-        if (callback) {
-            callback();
-        }
-
-    }, ANIM_TIME);
-}
-
-
-function animateEnter(el) {
-
-    el.classList.remove("hidden");
-    el.classList.add("slide-enter");
-
-    setTimeout(() => {
-        el.classList.remove("slide-enter");
-    }, ANIM_TIME);
-}
-
-
-// ==================================================
-// CHANNEL LIST
-// ==================================================
-
 function renderJourneeChannels() {
-
-    const list  = $("channel-list");
-    const title = $("one-channel-title");
-
+    const list = document.getElementById("channel-list");
+    const title = document.getElementById("one-channel-title");
     title.classList.add("hidden");
-    clear(list);
+    list.innerHTML = "";
 
     channels.forEach(ch => {
-
         const btn = document.createElement("button");
-
-        btn.addEventListener("click", () => {
-            showJourneeChannel(ch);
-        });
+        btn.onclick = () => showJourneeChannel(ch);
 
         const img = document.createElement("img");
-
         img.className = "logo";
         img.src = `logos/${sanitizeChannelName(ch)}.png`;
         img.alt = ch;
@@ -268,39 +206,23 @@ function renderJourneeChannels() {
     });
 }
 
-
-// ==================================================
-// SINGLE CHANNEL VIEW
-// ==================================================
-
 function showJourneeChannel(channel) {
+    const logos = document.getElementById("channel-list");
+    const cont = document.getElementById("journee-programmes");
+    const title = document.getElementById("one-channel-title");
 
-    const logos = $("channel-list");
-    const cont  = $("journee-programmes");
-    const title = $("one-channel-title");
-
-    // Sortie logos
-    animateExit(logos, () => {
+    // Animation de sortie pour les chaînes
+    logos.classList.add("slide-exit");
+    
+    // Attendre la fin de l'animation avant de cacher
+    setTimeout(() => {
         logos.classList.add("hidden");
-    });
+        logos.classList.remove("slide-exit");
+    }, 350);
 
     title.textContent = channel;
 
-    renderChannelPrograms(channel, cont);
-
-    animateEnter(cont);
-    animateEnter(title);
-}
-
-
-// ==================================================
-// RENDER PROGRAMS FOR ONE CHANNEL
-// ==================================================
-
-function renderChannelPrograms(channel, cont) {
-
     const now = new Date();
-
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -308,127 +230,101 @@ function renderChannelPrograms(channel, cont) {
         p.start <= endOfDay && p.stop >= now
     );
 
-    cont.innerHTML = `
-        <button class="back-btn" onclick="resetJourneeView()">
-            ⬅ Retour
-        </button>
-
-        ${filtered.map(renderSimple).join("")}
-    `;
+    cont.innerHTML =
+        `<button class="back-btn" onclick="resetJourneeView()">⬅ Retour</button>` +
+        filtered.map(p => renderSimple(p)).join("");
+    
+    // Animation d'entrée pour les programmes
+    cont.classList.remove("hidden");
+    title.classList.remove("hidden");
+    cont.classList.add("slide-enter");
+    title.classList.add("slide-enter");
+    
+    // Nettoyer la classe d'animation après
+    setTimeout(() => {
+        cont.classList.remove("slide-enter");
+        title
+    }, 350);
 }
-
-
-// ==================================================
-// RESET VIEW
-// ==================================================
 
 function resetJourneeView() {
-
-    const logos = $("channel-list");
-    const cont  = $("journee-programmes");
-    const title = $("one-channel-title");
-
-    animateExit(cont, () => {
-
+    const logos = document.getElementById("channel-list");
+    const cont = document.getElementById("journee-programmes");
+    const title = document.getElementById("one-channel-title");
+    
+    // Animation de sortie pour les programmes
+    cont.classList.add("slide-exit");
+    title.classList.add("slide-exit");
+    
+    // Attendre la fin de l'animation avant de cacher
+    setTimeout(() => {
         cont.classList.add("hidden");
-        clear(cont);
-    });
-
-    animateExit(title, () => {
-
         title.classList.add("hidden");
-    });
-
-    animateEnter(logos);
+        cont.classList.remove("slide-exit");
+        title.classList.remove("slide-exit");
+        cont.innerHTML = "";
+    }, 350);
+    
+    // Animation d'entrée pour les chaînes
+    logos.classList.remove("hidden");
+    logos.classList.add("slide-enter");
+    
+    // Nettoyer la classe d'animation après
+    setTimeout(() => {
+        logos.classList.remove("slide-enter");
+    }, 350);
 }
 
-
-// ==================================================
-// TIME SLOTS (NOW / TONIGHT / LATE)
-// ==================================================
-
-function renderSlot(listId, start, end) {
-
-    const list = $(listId);
-    clear(list);
+// -----------------------------------------
+// DIRECT / TONIGHT / LATE
+// -----------------------------------------
+function renderNow() {
+    const now = new Date();
+    const list = document.getElementById("now-list");
+    list.innerHTML = "";
 
     channels.forEach(ch => {
-
-        let prog;
-
-        // NOW
-        if (!start && !end) {
-
-            const now = new Date();
-
-            prog = programmes[ch].find(p =>
-                p.start <= now && p.stop >= now
-            );
-
-        }
-        // TONIGHT / LATE
-        else {
-
-            prog = bestOverlap(ch, start, end);
-        }
-
-        if (prog) {
-            list.innerHTML += renderNormal(prog);
-        }
+        const p = programmes[ch].find(p => p.start <= now && p.stop >= now);
+        if (p) list.innerHTML += renderNormal(p);
     });
 }
 
-
-// ==================================================
-// PUBLIC SLOTS
-// ==================================================
-
-function renderNow() {
-    renderSlot("now-list");
-}
-
-
 function renderTonight() {
-
     const start = new Date();
-    const end   = new Date();
-
+    const end = new Date();
     start.setHours(21, 0, 0);
     end.setHours(22, 30, 0);
 
-    renderSlot("tonight-list", start, end);
+    const list = document.getElementById("tonight-list");
+    list.innerHTML = "";
+
+    channels.forEach(ch => {
+        const p = bestOverlap(ch, start, end);
+        if (p) list.innerHTML += renderNormal(p);
+    });
 }
 
-
 function renderLate() {
-
     const start = new Date();
-    const end   = new Date();
-
+    const end = new Date();
     start.setHours(22, 30, 0);
     end.setHours(23, 59, 59);
 
-    renderSlot("late-list", start, end);
+    const list = document.getElementById("late-list");
+    list.innerHTML = "";
+
+    channels.forEach(ch => {
+        const p = bestOverlap(ch, start, end);
+        if (p) list.innerHTML += renderNormal(p);
+    });
 }
 
-
-// ==================================================
-// OVERLAP
-// ==================================================
-
 function bestOverlap(channel, t1, t2) {
-
-    let best = null;
-    let max  = 0;
+    let best = null, max = 0;
 
     programmes[channel].forEach(p => {
-
-        const overlap =
-            Math.min(p.stop, t2) -
-            Math.max(p.start, t1);
-
+        const overlap = Math.min(p.stop, t2) - Math.max(p.start, t1);
         if (overlap > max) {
-
             max = overlap;
             best = p;
         }
@@ -437,74 +333,38 @@ function bestOverlap(channel, t1, t2) {
     return best;
 }
 
-
-// ==================================================
+// -----------------------------------------
 // RENDERERS
-// ==================================================
-
+// -----------------------------------------
 function renderSimple(p) {
-
-    const progId =
-        `prog-${encode(p.ch)}-${p.start.getTime()}`;
-
+    const progId = `prog-${encode(p.ch)}-${p.start.getTime()}`;
     return `
-    <div id="${progId}"
-         class="program-simple"
-         onclick="goDetail('${encode(p.ch)}','${p.start.getTime()}')">
-
-        <div class="time">
-            ${formatTime(p.start)}
-        </div>
-
+    <div id="${progId}" class="program-simple" onclick="goDetail('${encode(p.ch)}','${p.start.getTime()}')">
+        <div class="time">${formatTime(p.start)}</div>
         <div>
-
-            <div class="title">
-                <strong>${p.title}</strong>
-            </div>
-
-            <div class="type">
-                ${p.category}
-            </div>
-
+            <div class="title"><strong>${p.title}</strong></div>
+            <div class="type">${p.category}</div>
         </div>
-
         <img src="${p.icon}">
     </div>`;
 }
 
-
 function renderNormal(p) {
-
     const start = formatTime(p.start);
-    const end   = formatTime(p.stop);
+    const end = formatTime(p.stop);
 
     return `
-    <div class="program-normal"
-         onclick="goDetail('${encode(p.ch)}','${p.start.getTime()}')">
-
+    <div class="program-normal" onclick="goDetail('${encode(p.ch)}','${p.start.getTime()}')">
         <img class="logo"
              src="logos/${sanitizeChannelName(p.ch)}.png"
              alt="${p.ch}"
              onerror="logoFallback(this, '${p.ch}')">
-
         <div class="info">
-
-            <div class="time">
-                ${start} – ${end}
-            </div>
-
-            <div class="title">
-                <strong>${p.title}</strong>
-            </div>
-
-            <div class="type">
-                ${p.category} – ${duration(p)}
-            </div>
-
+            <div class="time">${start} – ${end}</div>
+            <div class="title"><strong>${p.title}</strong></div>
+            <div class="type">${p.category} – ${duration(p)}</div>
         </div>
-
         <img class="visuel" src="${p.icon}">
-
     </div>`;
 }
 
