@@ -80,75 +80,45 @@ async function loadXML() {
     programmes = {};
     allPrograms = [];
 
+    // Fonction utilitaire (évite 50 lignes)
+    const getText = (node, selector) =>
+        node.querySelector(selector)?.textContent ?? "";
+
+    const getAttr = (node, selector, attr) =>
+        node.querySelector(selector)?.getAttribute(attr) ?? "";
+
+    const getList = (node, selector) =>
+        node ? Array.from(node.querySelectorAll(selector)).map(n => n.textContent) : [];
+
     xml.querySelectorAll("programme").forEach(p => {
         const ch = p.getAttribute("channel");
         if (!programmes[ch]) programmes[ch] = [];
 
-        const start = parseDate(p.getAttribute("start"));
-        const stop = parseDate(p.getAttribute("stop"));
-        const title = p.querySelector("title")?.textContent ?? "";
-        const subtitle = p.querySelector("sub-title")?.textContent ?? "";
-        const desc = p.querySelector("desc")?.textContent ?? "";
-        const category = p.querySelector("category")?.textContent ?? "";
-        const icon = p.querySelector("icon")?.getAttribute("src") ?? "";
-        const date = p.querySelector("date")?.textContent ?? "";
-        const country = p.querySelector("country")?.textContent ?? "";
-        const episodeNum = p.querySelector("episode-num")?.textContent ?? "";
-        const rating = p.querySelector("rating value")?.textContent ?? "";
-
-        // Récupération des crédits
-        const creditsNode = p.querySelector("credits");
-
-        const actors = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("actor")).map(a => a.textContent)
-            : [];
-
-        const directors = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("director")).map(a => a.textContent)
-            : [];
-
-        const producers = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("producer")).map(a => a.textContent)
-            : [];
-
-        const editors = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("editor")).map(a => a.textContent)
-            : [];
-
-        const adapters = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("adapter")).map(a => a.textContent)
-            : [];
-
-        const composers = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("composer")).map(a => a.textContent)
-            : [];
-
-        const guests = creditsNode
-            ? Array.from(creditsNode.querySelectorAll("guest")).map(a => a.textContent)
-            : [];
+        const credits = p.querySelector("credits");
 
         const obj = {
             ch,
-            start,
-            stop,
-            title,
-            subtitle,
-            desc,
-            category,
-            icon,
-            date,
-            country,
-            episodeNum,
-            rating,
-            actors,
-            directors,
-            producers,
-            editors,
-            adapters,
-            composers,
-            guests
-        };
+            start: parseDate(p.getAttribute("start")),
+            stop: parseDate(p.getAttribute("stop")),
+            title:      getText(p, "title"),
+            subtitle:   getText(p, "sub-title"),
+            desc:       getText(p, "desc"),
+            category:   getText(p, "category"),
+            icon:       getAttr(p, "icon", "src"),
+            date:       getText(p, "date"),
+            country:    getText(p, "country"),
+            episodeNum: getText(p, "episode-num"),
+            rating:     getText(p, "rating value"),
 
+            // Crédits
+            actors:     getList(credits, "actor"),
+            directors:  getList(credits, "director"),
+            producers:  getList(credits, "producer"),
+            editors:    getList(credits, "editor"),
+            adapters:   getList(credits, "adapter"),
+            composers:  getList(credits, "composer"),
+            guests:     getList(credits, "guest"),
+        };
 
         programmes[ch].push(obj);
         allPrograms.push(obj);
@@ -792,3 +762,4 @@ function normalize(str) {
         .replace(/[\u0300-\u036f]/g, "") // supprime les accents
         .toLowerCase();                  // met en minuscule
 }
+
