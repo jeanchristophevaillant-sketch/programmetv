@@ -416,18 +416,25 @@ function showDetail(prog) {
 
     // Afficher les infos supplémentaires (année, pays, épisode, classification)
     renderDetailInfo(prog);
-    const categoriesAllocine = ["Film", "Série", "Telefilm", "Téléfilm", "Cinema","Series","Action","Animation","Aventure","Comédie","Drame","Fantastique","Horreur","Policier","Science-Fiction","Thriller"];
+    const categoriesAllocine = ["film", "Série", "Cinema", "Serie", "Action", "Animation", "Aventure", "Comédie", "Drame", "Fantastique", "Horreur", "Policier", "fiction", "Thriller"];
 
     const allocineBlock = document.getElementById("detail-allocine-block");
-    if (categoriesAllocine.includes(prog.category)) {
+    
+    const categoryNorm = normalize(prog.category);
+    
+    const match = categoriesAllocine.some(cat =>
+        categoryNorm.includes(normalize(cat))
+    );
+    
+    if (match) {
         allocineBlock.style.display = "block"; 
         allocineBlock.innerHTML =
             `<a href="${allocineSearchUrl(prog.title)}" target="_blank">📝 Infos AlloCiné</a>`;
-    }
-    else {
+    } else {
         allocineBlock.style.display = "none";
         allocineBlock.innerHTML = "";
     }
+
     
 
     // Afficher le logo de la chaîne
@@ -776,4 +783,12 @@ document.addEventListener("touchend", e => {
 function allocineSearchUrl(title) {
     const encoded = encodeURIComponent(title);
     return `https://www.allocine.fr/rechercher/?q=${encoded}`;
+}
+
+
+function normalize(str) {
+    return str
+        .normalize("NFD")                // décompose caractères + accents
+        .replace(/[\u0300-\u036f]/g, "") // supprime les accents
+        .toLowerCase();                  // met en minuscule
 }
