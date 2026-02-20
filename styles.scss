@@ -366,6 +366,10 @@ header {
   padding: 20px;
   overflow-y: auto;
   animation: slideInRight 0.3s ease-out;
+  img {
+    width: 100%;
+    height: auto;
+    }
 }
 
 .detail-modal.hidden .detail-content {

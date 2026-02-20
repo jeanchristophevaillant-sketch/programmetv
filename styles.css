@@ -297,6 +297,10 @@ header {
   -webkit-animation: slideInRight 0.3s ease-out;
           animation: slideInRight 0.3s ease-out;
 }
+.detail-content img {
+  width: 100%;
+  height: auto;
+}
 
 .detail-modal.hidden .detail-content {
   -webkit-animation: slideOutRight 0.3s ease-in;
