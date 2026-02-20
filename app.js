@@ -18,6 +18,7 @@ let currentDetailProgram = null;
 // INIT
 // -----------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
+    history.replaceState({ home: true }, "", "");
     initTabs();
      // 🔥 Activer Direct au démarrage
     activateTab("maintenant");
@@ -47,12 +48,22 @@ document.addEventListener("DOMContentLoaded", () => {
 // -----------------------------------------
 // GESTION DU BOUTON RETOUR DU SMARTPHONE
 // -----------------------------------------
-window.addEventListener("popstate", () => {
+window.addEventListener("popstate", (e) => {
+
+    const state = e.state;
+
+    // Fermer un détail
     if (isModalVisible) {
-        // Annule la visibilité avant d'appeler closeDetail()
-        isModalVisible = false;
-        closeDetail(false); // ⚠️ on indique "ne pas faire history.back()" dedans
+        closeDetail(false);
+        return;
     }
+
+    // Retour vers accueil (logos)
+    if (!state || state.home) {
+        resetJourneeView();
+        return;
+    }
+
 });
 
 
@@ -274,6 +285,11 @@ function renderJourneeChannels() {
 // ==================================================
 
 function showJourneeChannel(channel) {
+    history.pushState(
+        { channel: channel },
+        "",
+        ""
+    );
 
     const logos = $("channel-list");
     const cont  = $("journee-programmes");

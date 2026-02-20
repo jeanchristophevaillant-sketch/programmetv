@@ -1,0 +1,496 @@
+/* GLOBAL */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #fafafa;
+    margin: 0;
+}
+
+/* HEADER */
+header {
+    background: #6200ee;
+    color: white;
+    padding: 10px;
+    /*position: sticky;*/
+    top: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+/* detail-page PAGE FIX */
+#detail-page {
+    width: 100%;
+    min-height: 100vh;
+    display: block;
+    padding: 15px;
+    box-sizing: border-box;
+    background: white;
+}
+
+
+/* TABS */
+.tabs {
+    display: flex;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    padding: 10px;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    color: white;
+    border-bottom: 2px solid white;
+}
+
+/* VUES TABS */
+.tab-content {
+    display: none;
+}
+
+.tab-content.visible {
+    display: block;
+}
+
+.tab-content.slide-out-left {
+    animation: slideOutToLeft 0.35s ease-in;
+}
+
+.tab-content.slide-out-right {
+    animation: slideOutToRight 0.35s ease-in;
+}
+
+.tab-content.slide-in-left {
+    animation: slideInFromLeft 0.35s ease-out;
+}
+
+.tab-content.slide-in-right {
+    animation: slideInFromRight 0.35s ease-out;
+}
+#detail-page .zone-texte {
+    padding: 10px;
+} 
+#detail-page .detail-visuel {
+    width: 100%;
+    height: auto;
+}
+#detail-page .detail-time,#detail-page .detail-category,#detail-allocine-block {
+    font-size: smaller;
+    font-weight: bold;
+    display: inline;
+}
+#detail-allocine-block {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+}
+#detail-allocine-block a {
+    color:#666;
+    text-decoration: none!important;
+}
+
+/* BOUTON RETOUR (detail-page.html) */
+.back-btn {
+    display: none!important;
+    background: #1d2734;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* ---------------------------
+   JOURNÉE – STRUCTURE
+--------------------------- */
+
+#journee-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Grille de logos */
+#channel-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+}
+
+#channel-list.slide-exit {
+    animation: slideOutToLeft 0.35s ease-in;
+}
+
+#journee-programmes.slide-enter {
+    animation: slideInFromRight 0.35s ease-out;
+}
+
+#journee-programmes.slide-exit {
+    animation: slideOutToLeft 0.35s ease-in;
+}
+
+#channel-list.slide-enter {
+    animation: slideInFromRight 0.35s ease-out;
+}
+
+#journee-programmes.slide-exit-right {
+    animation: slideOutToRight 0.35s ease-in;
+}
+
+#channel-list.slide-enter-left {
+    animation: slideInFromLeft 0.35s ease-out;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutToRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideOutToLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
+#channel-list button {
+    width: auto;
+    display: flex;
+    padding: 6px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    align-items: center;
+}
+
+/* Logos dans la grille */
+#channel-list .logo {
+    width: 55px;
+    height: auto;
+    
+    padding: 4px;
+    border-radius: 4px;
+}
+
+/* Conteneur des programmes */
+#journee-programmes {
+    width: 100%;
+    display: block;
+}
+
+/* ---------------------------
+   PROGRAMMES SIMPLES
+--------------------------- */
+
+.program-simple img {
+    width: 75px;
+    height: auto;
+    background: #e0e0e0;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.program-simple .time {
+    font-weight: bold;
+}
+
+/* ---------------------------
+   PROGRAMMES NORMAUX
+--------------------------- */
+
+.program-simple,
+.program-normal {
+    display: grid;
+    grid-template-columns: 60px 1fr 80px;
+    background: white;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    align-items: center;
+    column-gap: 12px; /* espace entre colonnes */
+}
+
+.program-normal .logo {
+    width: 55px;
+    height: auto;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.program-normal .visuel {
+    width: 80px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.program-normal .time,
+.program-normal .type,
+.program-simple .type {
+    font-size: smaller;
+}
+.program-normal .title {
+    margin-top:5px;
+    margin-bottom: 5px;;
+}
+/* ---------------------------
+   FALLBACK (Logo manquant)
+--------------------------- */
+
+.logo-fallback {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ddd;
+    color: #333;
+    font-size: 12px;
+    text-align: center;
+    border-radius: 4px;
+}
+
+/* UTILITAIRES */
+.hidden {
+    display: none!important;
+}
+/* ANIMATION PUSH VIEW */
+#view-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+#view-container.push-left {
+    transform: translateX(-100%);
+    transition: transform 0.35s ease;
+}
+
+.push-reset {
+    transform: translateX(0);
+    transition: transform 0.35s ease;
+}
+
+/* PAGE DETAIL : slide-in depuis la droite */
+
+
+#detail-page.visible {
+    transform: translateX(-100%);
+}
+/* MODAL DÉTAIL */
+.detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.detail-modal.hidden {
+    display: none;
+}
+
+.detail-content {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    background: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    animation: slideInFromRight 0.3s ease-out;
+}
+
+#detail-modal.hidden .detail-content {
+    animation: slideOutToRight 0.3s ease-in;
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutToRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+.detail-back-btn {
+    display: block !important;
+    background: #6200ee;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.detail-back-btn:active {
+    opacity: 0.8;
+}
+
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.detail-info {
+    flex: 1;
+}
+
+.detail-channel-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: contain;
+    flex-shrink: 0;
+    padding: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.detail-channel-logo:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+#detail-title {
+    font-size: 24px;
+    margin: 15px 0 10px 0;
+    color: #333;
+}
+
+.detail-subtitle {
+    font-size: 13px;
+    font-style: italic;
+    color: #999;
+    margin-bottom: 8px;
+}
+
+.detail-time,
+.detail-category {
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.detail-info-block {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 15px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.detail-info-items {
+    line-height: 1.6;
+}
+
+.detail-visuel {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 15px 0;
+    background: #e0e0e0;
+}
+
+.detail-desc {
+    line-height: 1.6;
+    color: #555;
+    margin: 15px 0;
+}
+
+.detail-credits {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 600px) {
+    .detail-credits {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.credit-section {
+    margin: 0;
+    padding: 0;
+}
+
+.credit-section strong {
+    font-size: 13px;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.credit-small {
+    font-size: 12px;
+    opacity: 0.85;
+    line-height: 1.5;
+}

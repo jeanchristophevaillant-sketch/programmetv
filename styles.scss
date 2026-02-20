@@ -1,0 +1,470 @@
+/* ============================
+   VARIABLES
+============================ */
+
+$primary: #6200ee;
+$dark: #1d2734;
+$light: #fafafa;
+$gray: #ddd;
+$text-dark: #333;
+$text-light: #666;
+
+$radius: 6px;
+$transition: 0.35s ease;
+
+
+/* ============================
+   MIXINS
+============================ */
+
+@mixin slide($name, $fromX, $toX) {
+  @keyframes #{$name} {
+    from {
+      transform: translateX($fromX);
+      opacity: 0;
+    }
+    to {
+      transform: translateX($toX);
+      opacity: 1;
+    }
+  }
+}
+
+@mixin btn-base {
+  border: none;
+  padding: 10px 15px;
+  border-radius: $radius;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+
+/* ============================
+   GLOBAL
+============================ */
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: $light;
+  margin: 0;
+}
+
+
+/* ============================
+   HEADER
+============================ */
+
+header {
+  background: $primary;
+  color: white;
+  padding: 10px;
+  top: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+/* ============================
+   DETAIL PAGE
+============================ */
+
+#detail-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 15px;
+  background: white;
+  box-sizing: border-box;
+
+  .zone-texte {
+    padding: 10px;
+  }
+
+  .detail-visuel {
+    width: 100%;
+    height: auto;
+  }
+
+  .detail-time,
+  .detail-category,
+  #detail-allocine-block {
+    font-size: smaller;
+    font-weight: bold;
+    display: inline;
+  }
+
+  &.visible {
+    transform: translateX(-100%);
+  }
+}
+
+
+/* ============================
+   TABS
+============================ */
+
+.tabs {
+  display: flex;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 10px;
+  cursor: pointer;
+
+  &.active {
+    color: white;
+    border-bottom: 2px solid white;
+  }
+}
+
+.tab-content {
+  display: none;
+
+  &.visible {
+    display: block;
+  }
+
+  &.slide-out-left {
+    animation: slideOutLeft $transition;
+  }
+
+  &.slide-out-right {
+    animation: slideOutRight $transition;
+  }
+
+  &.slide-in-left {
+    animation: slideInLeft $transition;
+  }
+
+  &.slide-in-right {
+    animation: slideInRight $transition;
+  }
+}
+
+
+/* ============================
+   BOUTONS
+============================ */
+
+.back-btn {
+  @include btn-base;
+  display: none !important;
+  background: $dark;
+  color: white;
+}
+
+.detail-back-btn {
+  @include btn-base;
+  background: $primary;
+  color: white;
+  width: 100%;
+  margin-bottom: 15px;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+
+/* ============================
+   JOURNÉE
+============================ */
+
+#journee-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+#channel-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+
+  button {
+    display: flex;
+    padding: 6px;
+    background: white;
+    border: 1px solid $gray;
+    border-radius: $radius;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .logo {
+    width: 55px;
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  &.slide-enter {
+    animation: slideInRight $transition;
+  }
+
+  &.slide-exit {
+    animation: slideOutLeft $transition;
+  }
+
+  &.slide-enter-left {
+    animation: slideInLeft $transition;
+  }
+}
+
+#journee-programmes {
+  width: 100%;
+  display: block;
+
+  &.slide-enter {
+    animation: slideInRight $transition;
+  }
+
+  &.slide-exit {
+    animation: slideOutLeft $transition;
+  }
+
+  &.slide-exit-right {
+    animation: slideOutRight $transition;
+  }
+}
+
+
+/* ============================
+   PROGRAMMES
+============================ */
+
+%program-base {
+  display: grid;
+  grid-template-columns: 60px 1fr 80px;
+  background: white;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: $radius;
+  border: 1px solid $gray;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.program-simple,
+.program-normal {
+  @extend %program-base;
+}
+
+.program-simple {
+
+  img {
+    width: 75px;
+    background: #e0e0e0;
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  .time {
+    font-weight: bold;
+  }
+
+  .type {
+    font-size: smaller;
+  }
+}
+
+.program-normal {
+
+  .logo {
+    width: 55px;
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  .visuel {
+    width: 80px;
+    border-radius: 4px;
+  }
+
+  .time,
+  .type {
+    font-size: smaller;
+  }
+
+  .title {
+    margin: 5px 0;
+  }
+}
+
+
+/* ============================
+   FALLBACK
+============================ */
+
+.logo-fallback {
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray;
+  color: $text-dark;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+
+/* ============================
+   UTILITAIRES
+============================ */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ============================
+   VIEW CONTAINER
+============================ */
+
+#view-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+
+  &.push-left {
+    transform: translateX(-100%);
+    transition: transform $transition;
+  }
+}
+
+.push-reset {
+  transform: translateX(0);
+  transition: transform $transition;
+}
+
+
+/* ============================
+   MODAL DETAIL
+============================ */
+
+.detail-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.detail-content {
+  width: 100%;
+  height: 100%;
+  background: white;
+  padding: 20px;
+  overflow-y: auto;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.detail-modal.hidden .detail-content {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+
+/* ============================
+   DETAIL INFOS
+============================ */
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.detail-channel-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  padding: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+#detail-title {
+  font-size: 24px;
+  margin: 15px 0 10px;
+  color: $text-dark;
+}
+
+.detail-subtitle {
+  font-size: 13px;
+  font-style: italic;
+  color: #999;
+}
+
+.detail-info-block {
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: $radius;
+  margin: 15px 0;
+  font-size: 12px;
+  color: $text-light;
+}
+
+.detail-desc {
+  line-height: 1.6;
+  color: #555;
+}
+
+
+/* ============================
+   CREDITS
+============================ */
+
+.detail-credits {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid $gray;
+  display: grid;
+  gap: 15px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.credit-section {
+
+  strong {
+    font-size: 13px;
+    color: $text-dark;
+    display: block;
+  }
+}
+
+.credit-small {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* ============================
+   ANIMATIONS
+============================ */
+
+@include slide(slideInLeft, -100%, 0);
+@include slide(slideInRight, 100%, 0);
+@include slide(slideOutLeft, 0, -100%);
+@include slide(slideOutRight, 0, 100%);
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
